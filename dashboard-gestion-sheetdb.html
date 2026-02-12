@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard de Gestión - Sistema de Radicación</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;600;700&family=Fraunces:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0A2540;
+            --primary-light: #1A3F5F;
+            --accent: #00D4AA;
+            --accent-dark: #00B591;
+            --warning: #FFB020;
+            --danger: #FF4757;
+            --success: #10B981;
+            --neutral-50: #F8FAFC;
+            --neutral-100: #F1F5F9;
+            --neutral-200: #E2E8F0;
+            --neutral-300: #CBD5E1;
+            --neutral-700: #334155;
+            --neutral-800: #1E293B;
+            --neutral-900: #0F172A;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Archivo', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--neutral-50) 0%, var(--neutral-100) 100%);
+            color: var(--neutral-800);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 2rem;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-family: 'Fraunces', serif;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .btn-refresh {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent);
+            color: var(--primary);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-refresh:hover {
+            background: var(--accent-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--accent);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card.pendiente {
+            border-left-color: var(--warning);
+        }
+
+        .stat-card.proceso {
+            border-left-color: #3B82F6;
+        }
+
+        .stat-card.completado {
+            border-left-color: var(--success);
+        }
+
+        .stat-card.reasignado {
+            border-left-color: #8B5CF6;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--neutral-700);
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-family: 'Fraunces', serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            margin-bottom: 2rem;
+        }
+
+        .filters h3 {
+            font-family: 'Fraunces', serif;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--neutral-700);
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.625rem;
+            border: 2px solid var(--neutral-200);
+            border-radius: 6px;
+            font-family: 'Archivo', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-header h2 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.5rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--neutral-100);
+        }
+
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--neutral-700);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--neutral-200);
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--neutral-200);
+        }
+
+        tbody tr {
+            transition: background-color 0.2s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--neutral-50);
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-pendiente {
+            background: #FEF3C7;
+            color: #92400E;
+        }
+
+        .badge-proceso {
+            background: #DBEAFE;
+            color: #1E40AF;
+        }
+
+        .badge-completado {
+            background: #D1FAE5;
+            color: #065F46;
+        }
+
+        .badge-reasignado {
+            background: #EDE9FE;
+            color: #5B21B6;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 0.25rem 0.625rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .priority-baja {
+            background: var(--success);
+            color: white;
+        }
+
+        .priority-media {
+            background: var(--warning);
+            color: white;
+        }
+
+        .priority-alta {
+            background: #F97316;
+            color: white;
+        }
+
+        .priority-critica {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-view {
+            background: #3B82F6;
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: var(--primary);
+            padding: 2rem;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .modal-header h3 {
+            font-family: 'Fraunces', serif;
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .detail-item {
+            padding: 1rem;
+            background: var(--neutral-50);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .detail-label {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--neutral-700);
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .detail-value {
+            font-size: 1rem;
+            color: var(--neutral-900);
+        }
+
+        .edit-section {
+            background: #FFF7ED;
+            border: 2px solid var(--warning);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .edit-section h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-family: 'Fraunces', serif;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--neutral-700);
+        }
+
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--neutral-200);
+            border-radius: 8px;
+            font-family: 'Archivo', sans-serif;
+            font-size: 1rem;
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            background: var(--neutral-50);
+            border-top: 1px solid var(--neutral-200);
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel {
+            background: var(--neutral-200);
+            color: var(--neutral-700);
+        }
+
+        .btn-cancel:hover {
+            background: var(--neutral-300);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+            color: var(--primary);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--neutral-700);
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .table-wrapper {
+                font-size: 0.875rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+
+            .modal-content {
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <header class="header">
+        <div class="header-content">
+            <h1>📊 Dashboard de Gestión</h1>
+            <div class="header-actions">
+                <button class="btn-refresh" onclick="loadData()">
+                    🔄 Actualizar
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card pendiente">
+                <div class="stat-label">Pendientes</div>
+                <div class="stat-value" id="statPendiente">0</div>
+            </div>
+            <div class="stat-card proceso">
+                <div class="stat-label">En Proceso</div>
+                <div class="stat-value" id="statProceso">0</div>
+            </div>
+            <div class="stat-card completado">
+                <div class="stat-label">Completados</div>
+                <div class="stat-value" id="statCompletado">0</div>
+            </div>
+            <div class="stat-card reasignado">
+                <div class="stat-label">Reasignados</div>
+                <div class="stat-value" id="statReasignado">0</div>
+            </div>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filters">
+            <h3>Filtros</h3>
+            <div class="filter-grid">
+                <div class="filter-group">
+                    <label>Estado</label>
+                    <select id="filterEstado" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="En Proceso">En Proceso</option>
+                        <option value="Completado">Completado</option>
+                        <option value="Reasignado">Reasignado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Prioridad</label>
+                    <select id="filterPrioridad" onchange="applyFilters()">
+                        <option value="">Todas</option>
+                        <option value="Baja">Baja</option>
+                        <option value="Media">Media</option>
+                        <option value="Alta">Alta</option>
+                        <option value="Hotticket">Hotticket</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Gestor</label>
+                    <select id="filterGestor" onchange="applyFilters()">
+                        <option value="">Todos</option>
+                        <option value="Kevin">Kevin</option>
+                        <option value="Anderson">Anderson</option>
+                        <option value="Andrés">Andrés</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Sede</label>
+                    <select id="filterSede" onchange="applyFilters()">
+                        <option value="">Todas</option>
+                        <option value="Bogotá">Bogotá</option>
+                        <option value="Medellín">Medellín</option>
+                        <option value="Cali">Cali</option>
+                        <option value="Barranquilla">Barranquilla</option>
+                        <option value="Cartagena">Cartagena</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de Solicitudes -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2>Solicitudes Radicadas</h2>
+            </div>
+            <div class="table-wrapper">
+                <table id="solicitudesTable">
+                    <thead>
+                        <tr>
+                            <th>Radicado</th>
+                            <th>Fecha</th>
+                            <th>Radicador</th>
+                            <th>Sede</th>
+                            <th>Equipo</th>
+                            <th>Prioridad</th>
+                            <th>Estado</th>
+                            <th>Gestor</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="9" class="empty-state">
+                                <div>
+                                    <p>Cargando solicitudes...</p>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Detalle/Edición -->
+    <div class="modal" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Detalle de Solicitud</h3>
+                <p id="modalRadicado"></p>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid" id="detailGrid">
+                    <!-- Se llenará dinámicamente -->
+                </div>
+
+                <div class="edit-section">
+                    <h4>✏️ Gestión de la Solicitud</h4>
+                    <div class="form-group">
+                        <label for="editEstado">Estado</label>
+                        <select id="editEstado">
+                            <option value="Pendiente">Pendiente</option>
+                            <option value="En Proceso">En Proceso</option>
+                            <option value="Completado">Completado</option>
+                            <option value="Reasignado">Reasignado</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editRespuesta">Respuesta del Gestor</label>
+                        <textarea id="editRespuesta" placeholder="Ingrese la respuesta o comentarios..."></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-cancel" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-save" onclick="saveChanges()">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE SHEETDB
+        // ============================================
+        // IMPORTANTE: Reemplaza esto con tu URL de SheetDB
+        const SHEETDB_URL = 'https://sheetdb.io/api/v1/2p1rjhca19ok4';
+
+        let allData = [];
+        let currentEditingRow = null;
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+        });
+
+        async function loadData() {
+            showLoading(true);
+            
+            try {
+                console.log('📥 Cargando datos de SheetDB...');
+                const response = await fetch(SHEETDB_URL);
+                const data = await response.json();
+                
+                console.log('✅ Datos cargados:', data);
+                
+                allData = data;
+                updateStats(data);
+                renderTable(data);
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('❌ Error loading data:', error);
+                showLoading(false);
+                alert('Error al cargar los datos. Por favor, intente nuevamente.');
+            }
+        }
+
+        function updateStats(data) {
+            const stats = {
+                pendiente: 0,
+                proceso: 0,
+                completado: 0,
+                reasignado: 0
+            };
+
+            data.forEach(item => {
+                const estado = (item.estado || '').toLowerCase().replace(' ', '');
+                if (estado === 'pendiente') stats.pendiente++;
+                else if (estado === 'enproceso') stats.proceso++;
+                else if (estado === 'completado') stats.completado++;
+                else if (estado === 'reasignado') stats.reasignado++;
+            });
+
+            document.getElementById('statPendiente').textContent = stats.pendiente;
+            document.getElementById('statProceso').textContent = stats.proceso;
+            document.getElementById('statCompletado').textContent = stats.completado;
+            document.getElementById('statReasignado').textContent = stats.reasignado;
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('tableBody');
+            
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="empty-state">
+                            <div>
+                                <p>No hay solicitudes registradas</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = data.map((item, index) => {
+                const prioridadClass = (item.prioridad || '').toLowerCase();
+                const estadoClass = (item.estado || '').toLowerCase().replace(' ', '');
+                
+                return `
+                    <tr>
+                        <td><strong>${item.numeroRadicado || 'N/A'}</strong></td>
+                        <td>${item.fechaSolicitud || 'N/A'}</td>
+                        <td>${item.nombreRadicador || 'N/A'}</td>
+                        <td>${item.sede || 'N/A'}</td>
+                        <td>${item.equipoRevisar || 'N/A'}</td>
+                        <td><span class="priority-badge priority-${prioridadClass}">${item.prioridad || 'N/A'}</span></td>
+                        <td><span class="badge badge-${estadoClass}">${item.estado || 'Pendiente'}</span></td>
+                        <td><strong>${item.gestor || 'N/A'}</strong></td>
+                        <td>
+                            <button class="btn-action btn-view" onclick="openDetail(${index})">
+                                👁️ Ver
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function applyFilters() {
+            const estado = document.getElementById('filterEstado').value;
+            const prioridad = document.getElementById('filterPrioridad').value;
+            const gestor = document.getElementById('filterGestor').value;
+            const sede = document.getElementById('filterSede').value;
+
+            const filtered = allData.filter(item => {
+                return (!estado || item.estado === estado) &&
+                       (!prioridad || item.prioridad === prioridad) &&
+                       (!gestor || item.gestor === gestor) &&
+                       (!sede || item.sede === sede);
+            });
+
+            renderTable(filtered);
+        }
+
+        function openDetail(index) {
+            currentEditingRow = allData[index];
+            const item = currentEditingRow;
+
+            document.getElementById('modalTitle').textContent = 'Detalle de Solicitud';
+            document.getElementById('modalRadicado').textContent = item.numeroRadicado;
+
+            document.getElementById('detailGrid').innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Fecha</div>
+                    <div class="detail-value">${item.fechaSolicitud || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Radicador</div>
+                    <div class="detail-value">${item.nombreRadicador || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">ID Radicador</div>
+                    <div class="detail-value">${item.idRadicador || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Sede</div>
+                    <div class="detail-value">${item.sede || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Equipo</div>
+                    <div class="detail-value">${item.equipoRevisar || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Categoría</div>
+                    <div class="detail-value">${item.categoria || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Prioridad</div>
+                    <div class="detail-value">
+                        <span class="priority-badge priority-${(item.prioridad || '').toLowerCase()}">${item.prioridad || 'N/A'}</span>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Afectación</div>
+                    <div class="detail-value">${item.afectacion || 'N/A'}</div>
+                </div>
+                <div class="detail-item" style="grid-column: 1 / -1;">
+                    <div class="detail-label">Detalle de Solicitud</div>
+                    <div class="detail-value">${item.detalleSolicitud || 'N/A'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Gestor Asignado</div>
+                    <div class="detail-value"><strong>${item.gestor || 'N/A'}</strong></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Estado Actual</div>
+                    <div class="detail-value">
+                        <span class="badge badge-${(item.estado || 'pendiente').toLowerCase().replace(' ', '')}">${item.estado || 'Pendiente'}</span>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('editEstado').value = item.estado || 'Pendiente';
+            document.getElementById('editRespuesta').value = item.respuesta || '';
+
+            document.getElementById('detailModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            currentEditingRow = null;
+        }
+
+        async function saveChanges() {
+            if (!currentEditingRow) return;
+
+            const newEstado = document.getElementById('editEstado').value;
+            const newRespuesta = document.getElementById('editRespuesta').value;
+
+            showLoading(true);
+
+            try {
+                console.log('📤 Actualizando en SheetDB...');
+                
+                // SheetDB requiere buscar por un campo único
+                // Actualizamos usando el número de radicado
+                const response = await fetch(`${SHEETDB_URL}/numeroRadicado/${currentEditingRow.numeroRadicado}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        data: {
+                            estado: newEstado,
+                            respuesta: newRespuesta
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                console.log('✅ Actualización exitosa:', result);
+
+                showLoading(false);
+                closeModal();
+                
+                alert('✅ Cambios guardados exitosamente');
+                
+                // Recargar datos
+                loadData();
+
+            } catch (error) {
+                showLoading(false);
+                alert('❌ Error al guardar los cambios. Por favor, intente nuevamente.');
+                console.error('Error:', error);
+            }
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            overlay.classList.toggle('show', show);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        document.getElementById('detailModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
